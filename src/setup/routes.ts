@@ -5,6 +5,7 @@ import { slackWorkspace } from "@repo/db/schema/slack"
 import { ROLE_ADMIN, roleAtLeast } from "@repo/lib/permissions"
 import { applyMigrations, migrationStatus } from "../db/migrate"
 import { availableProviders } from "@/lib/brain/turn/brain-model"
+import { isAllowedSupermemoryBaseURL } from "../memory/client"
 import type { AppContext } from "@/types"
 import { slackCredentials, storeSlackCredentials } from "./config-store"
 import { slackAppManifest } from "./manifest"
@@ -42,6 +43,10 @@ export const setupRoutes = new Hono<AppContext>()
 					c.req.query("migrate_error") ??
 					("error" in migrations ? migrations.error : null),
 				hasMemoryKey: Boolean(c.env.SUPERMEMORY_API_KEY?.trim()),
+				hasMemoryBaseURL: isAllowedSupermemoryBaseURL(
+					c.env.SUPERMEMORY_BASE_URL,
+				),
+				memoryBaseURLConfigured: Boolean(c.env.SUPERMEMORY_BASE_URL?.trim()),
 				modelKeyUnrecognized: Boolean(
 					c.env.MODEL_API_KEY?.trim() &&
 						!providerForModelKey(c.env.MODEL_API_KEY.trim()),

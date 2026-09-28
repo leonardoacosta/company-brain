@@ -98,9 +98,8 @@ TypeScript on Cloudflare Workers, Durable Objects and D1, with memory on [superm
 
 ## Deploy in five minutes
 
-**1. Click deploy.** It asks for two secrets:
+**1. Configure hosted memory and a model provider.** Set `SUPERMEMORY_API_KEY` to a key from [console.supermemory.ai](https://console.supermemory.ai). Company Brain connects only to `https://api.supermemory.ai`. Also set one model provider key:
 
-- `SUPERMEMORY_API_KEY`: where the brain keeps its memory. Get one at [console.supermemory.ai](https://console.supermemory.ai).
 - `MODEL_API_KEY`: an Anthropic, OpenAI, Google or xAI key, whichever you have. The brain works out the provider from the key. You pay the provider directly, no markup. An [OpenRouter](https://openrouter.ai) key works too, and reaches every provider's models through one account.
 
 Everything else is provisioned for you: D1, KV, Durable Objects and Workers AI.
@@ -132,7 +131,7 @@ To use the built-in container on Workers Paid, uncomment the **Workers Paid** bl
 
 ```sh
 bun install
-cp .dev.vars.example .dev.vars   # fill in the two keys
+cp .dev.vars.example .dev.vars   # set hosted Supermemory API key and model key
 bun run dev
 ```
 

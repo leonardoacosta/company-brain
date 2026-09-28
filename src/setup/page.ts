@@ -4,6 +4,8 @@ type PageParams = {
 	pendingMigrations: string[]
 	migrationError: string | null
 	hasMemoryKey: boolean
+	hasMemoryBaseURL: boolean
+	memoryBaseURLConfigured: boolean
 	modelKeyUnrecognized: boolean
 	sandbox: "daytona" | "container" | null
 	providers: string[]
@@ -63,7 +65,14 @@ function keysBody(params: PageParams): string {
 	const rows: string[] = []
 	if (!params.hasMemoryKey) {
 		rows.push(
-			`<li><strong><code>SUPERMEMORY_API_KEY</code></strong> is missing. This is where the brain keeps its memory; get a key at <a href="https://console.supermemory.ai" target="_blank" rel="noreferrer">console.supermemory.ai</a>.</li>`,
+			"<li><strong><code>SUPERMEMORY_API_KEY</code></strong> is missing. Set it to a hosted Supermemory API key.</li>",
+		)
+	}
+	if (!params.hasMemoryBaseURL) {
+		rows.push(
+			params.memoryBaseURLConfigured
+				? "<li><strong><code>SUPERMEMORY_BASE_URL</code></strong> must be exactly <code>https://api.supermemory.ai</code>.</li>"
+				: "<li><strong><code>SUPERMEMORY_BASE_URL</code></strong> is missing. Set it to <code>https://api.supermemory.ai</code>.</li>",
 		)
 	}
 	if (params.providers.length === 0) {
@@ -120,7 +129,8 @@ function extras(params: PageParams): string {
 }
 
 export function setupPage(params: PageParams): string {
-	const keysDone = params.hasMemoryKey && params.providers.length > 0
+	const keysDone =
+		params.hasMemoryKey && params.hasMemoryBaseURL && params.providers.length > 0
 	const installed = params.installedTeam !== null
 
 	// Each step unlocks the next. Signing in uses the Slack app, so it comes
@@ -204,7 +214,7 @@ export function setupPage(params: PageParams): string {
 		1,
 		states.keys,
 		"Add your API keys",
-		`Memory on supermemory, model on ${escapeHtml(providerNames || "your provider")}.`,
+			`Memory on hosted Supermemory, model on ${escapeHtml(providerNames || "your provider")}.`,
 		keysBody(params),
 	)}
 	${step(

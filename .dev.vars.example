@@ -1,7 +1,7 @@
 # ── Required ──────────────────────────────────────────────────────────────────
-# Your supermemory API key: this is where the brain reads and writes memory.
-# Get one at https://console.supermemory.ai
+# Your hosted Supermemory API key. Get one at https://console.supermemory.ai
 SUPERMEMORY_API_KEY=""
+SUPERMEMORY_BASE_URL="https://api.supermemory.ai"
 
 # One model API key: Anthropic, OpenAI, Google, xAI or OpenRouter. Paste whichever
 # you have; the brain tells them apart by prefix. An OpenRouter key (sk-or-)
