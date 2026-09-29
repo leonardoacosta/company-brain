@@ -39,6 +39,7 @@ export const brainOverviewRoutes = new Hono<AppContext>().get(
 			])
 
 		return c.json({
+			loginOnly: c.env.SLACK_LOGIN_ONLY === "true",
 			research: { status: research },
 			slack: {
 				connected: slack.connected,

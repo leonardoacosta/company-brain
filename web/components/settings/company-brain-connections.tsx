@@ -59,7 +59,8 @@ type ConnRow = {
 	status: "active" | "pending" | "error"
 	userId: string | null
 }
-type SlackStatus = { connected: boolean; teamName: string | null }
+type SlackStatus = { connected: boolean; teamName: string | null; loginOnly: boolean }
+
 
 function titleCase(s: string) {
 	return s.replace(/\b\w/g, (c) => c.toUpperCase())
@@ -229,11 +230,13 @@ function AppCard({
 function SlackCard({
 	status,
 	isAdmin,
+	loginOnly,
 	installHref,
 	onDisconnect,
 }: {
 	status: SlackStatus | null
 	isAdmin: boolean
+	loginOnly: boolean
 	installHref: string
 	onDisconnect: () => Promise<void>
 }) {
@@ -269,7 +272,7 @@ function SlackCard({
 				/>
 			}
 			footerRight={
-				isAdmin ? (
+				isAdmin && status?.loginOnly === false ? (
 					<div className="flex items-center gap-2">
 						{connected ? (
 							<button
@@ -392,8 +395,8 @@ export default function CompanyBrainConnections() {
 		useState<McpDirectoryEntry | null>(null)
 	const deepLinkHandled = useRef(false)
 	const router = useRouter()
-
 	const { isAdmin } = useOrgMemberRole()
+
 	const directory = useMcpDirectory()
 	const directoryEntries = useMemo(
 		() => listableDirectoryEntries(directory.entries),
@@ -424,7 +427,7 @@ export default function CompanyBrainConnections() {
 		if (slackRes.ok) {
 			setSlackStatus((await slackRes.json()) as SlackStatus)
 		} else {
-			setSlackStatus({ connected: false, teamName: null })
+			setSlackStatus({ connected: false, teamName: null, loginOnly: true })
 		}
 	}, [])
 
@@ -813,6 +816,7 @@ export default function CompanyBrainConnections() {
 		<SlackCard
 			status={slackStatus}
 			isAdmin={isAdmin}
+			loginOnly={slackStatus?.loginOnly !== false}
 			installHref={slackInstallHref}
 			onDisconnect={disconnectSlack}
 		/>
@@ -899,7 +903,7 @@ export default function CompanyBrainConnections() {
 										}
 										icon={<SlackMark className="size-5" />}
 									>
-										{isAdmin ? (
+										{isAdmin && slackStatus?.loginOnly === false ? (
 											<>
 												<DropdownMenuItem asChild className={menuItemClass}>
 													<a href={slackInstallHref}>Reconnect</a>
@@ -931,7 +935,7 @@ export default function CompanyBrainConnections() {
 											name={entry.name}
 											icon={brainConnectorIcon(entry.slug, entry.name)}
 										>
-											{isAdmin ? (
+											{isAdmin && slackStatus?.loginOnly === false ? (
 												<>
 													<DropdownMenuItem
 														className={menuItemClass}

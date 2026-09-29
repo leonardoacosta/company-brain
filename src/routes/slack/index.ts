@@ -1071,7 +1071,10 @@ export const slackRoutes = new Hono<AppContext>()
 	.get("/status", async (c) => {
 		const org = c.get("org")
 		if (!org) return c.json({ error: "unauthorized" }, 401)
-		return c.json(await getWorkspaceStatusByOrgId(c.env, org.id))
+		return c.json({
+			...(await getWorkspaceStatusByOrgId(c.env, org.id)),
+			loginOnly: c.env.SLACK_LOGIN_ONLY === "true",
+		})
 	})
 	.delete("/workspace", async (c) => {
 		const org = c.get("org")
@@ -1153,6 +1156,8 @@ export const slackRoutes = new Hono<AppContext>()
 		const org = c.get("org")
 		const user = c.get("user")
 		if (!org || !user) return c.json({ error: "unauthorized" }, 401)
+		if (c.env.SLACK_LOGIN_ONLY === "true")
+			return c.json({ error: "Slack bot installation is disabled in login-only mode" }, 403)
 
 		const role = c.get("memberRole")
 		if (role !== ROLE_ADMIN && role !== ROLE_OWNER)

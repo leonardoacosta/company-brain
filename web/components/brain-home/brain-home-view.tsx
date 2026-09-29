@@ -28,6 +28,7 @@ type RolloutOverview = {
 }
 
 type BrainOverview = {
+	loginOnly: boolean
 	research: { status: string | null }
 	slack: {
 		connected: boolean
@@ -92,6 +93,7 @@ function useBrainOverview() {
 	})
 
 	const slackConnected = overview.data?.slack.connected ?? false
+	const loginOnly = overview.data?.loginOnly ?? true
 	const appsCount = overview.data?.connections.apps ?? 0
 
 	return {
@@ -101,6 +103,7 @@ function useBrainOverview() {
 		isAdmin,
 		hasApps: appsCount > 0,
 		slackConnected,
+		loginOnly,
 		teamName: overview.data?.slack.teamName ?? null,
 		researchStatus: overview.data?.research.status ?? null,
 		rollout: overview.data?.slack.rollout ?? null,
@@ -148,10 +151,11 @@ export function BrainHomeView() {
 							hasApps={o.hasApps}
 							invited={o.membersCount > 1}
 							canInstall={o.isAdmin}
+							loginOnly={o.loginOnly}
 							toolsCardVisible={board.showBoard}
 						/>
 					)}
-					<AskInSlackCard board={board} />
+					{!o.loginOnly && <AskInSlackCard board={board} />}
 				</div>
 			</div>
 		</div>
@@ -212,6 +216,7 @@ function BrainTimeline({
 	hasApps,
 	invited,
 	canInstall,
+	loginOnly,
 	toolsCardVisible,
 }: {
 	researchStatus: string | null
@@ -220,6 +225,7 @@ function BrainTimeline({
 	hasApps: boolean
 	invited: boolean
 	canInstall: boolean
+	loginOnly: boolean
 	toolsCardVisible: boolean
 }) {
 	const { setViewMode } = useViewMode()
@@ -255,19 +261,21 @@ function BrainTimeline({
 					},
 				]
 			: []),
-		{
-			done: slackConnected,
-			title: slackConnected ? "Slack connected" : "Install to Slack",
-			hint: slackConnected
-				? undefined
-				: canInstall
-					? "Ask your brain from any channel."
-					: "Ask a workspace admin to install the bot.",
-			action:
-				slackConnected || !canInstall
-					? undefined
-					: { label: "Install", href: `${BACKEND}/brain/slack/oauth/install` },
-		},
+		...(!loginOnly
+			? [{
+					done: slackConnected,
+					title: slackConnected ? "Slack connected" : "Install to Slack",
+					hint: slackConnected
+						? undefined
+						: canInstall
+							? "Ask your brain from any channel."
+							: "Ask a workspace admin to install the bot.",
+					action:
+						slackConnected || !canInstall
+							? undefined
+							: { label: "Install", href: `${BACKEND}/brain/slack/oauth/install` },
+				}]
+			: []),
 		...(rollout != null
 			? [
 					{
