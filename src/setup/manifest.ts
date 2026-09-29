@@ -1,7 +1,31 @@
 export const SLACK_APP_NAME = "Supermemory Company Brain"
 
 /** Slack app manifest for this deployment, with its own URLs filled in. */
-export function slackAppManifest(origin: string, appName = SLACK_APP_NAME) {
+export function slackAppManifest(
+	origin: string,
+	appName = SLACK_APP_NAME,
+	loginOnly = false,
+) {
+	if (loginOnly) {
+		return {
+				display_information: {
+				name: appName,
+				description: "Sign in to Company Brain with Slack.",
+				background_color: "#000b36",
+			},
+			oauth_config: {
+				redirect_urls: [`${origin}/auth/slack/callback`],
+				scopes: { user: ["openid", "email", "profile"] },
+				pkce_enabled: false,
+			},
+			settings: {
+				org_deploy_enabled: false,
+				socket_mode_enabled: false,
+				token_rotation_enabled: false,
+				is_mcp_enabled: false,
+			},
+		}
+	}
 	return {
 		display_information: {
 			name: appName,

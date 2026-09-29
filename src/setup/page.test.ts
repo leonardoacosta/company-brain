@@ -16,6 +16,7 @@ const params = {
 	signedIn: false,
 	installedTeam: null,
 	manifest: {},
+	loginOnly: false,
 }
 
 describe("setupPage hosted memory configuration", () => {
@@ -47,5 +48,30 @@ describe("setupPage hosted memory configuration", () => {
 
 		expect(html).toContain("https://api.supermemory.ai")
 		expect(html).not.toContain("Memory on local Supermemory")
+	})
+})
+
+describe("setupPage login-only mode", () => {
+	it("finishes setup after credentials and sign-in without bot installation", () => {
+		const html = setupPage({
+			...params,
+			hasMemoryBaseURL: true,
+			slackConfigured: true,
+			signedIn: true,
+			loginOnly: true,
+		})
+
+		expect(html).toContain("Setup complete")
+		expect(html).not.toContain("Install the Slack app")
+		expect(html).not.toContain("slack/events")
+	})
+
+	it("explains login-only app scopes and callback", () => {
+		const html = setupPage({ ...params, loginOnly: true, hasMemoryBaseURL: true })
+
+		expect(html).toContain("<code>openid email profile</code>")
+		expect(html).toContain("/auth/slack/callback")
+		expect(html).not.toContain("bot scopes")
+		expect(html).not.toContain("Install to Workspace")
 	})
 })

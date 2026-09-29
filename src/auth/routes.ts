@@ -53,7 +53,7 @@ async function deploymentOrg(env: Env) {
 		.orderBy(asc(organization.createdAt))
 		.limit(1)
 	if (!org) return null
-	const [installed] = await db(env)
+	const [installed] = env.SLACK_LOGIN_ONLY === "true" ? [] : await db(env)
 		.select({ teamId: slackWorkspace.teamId })
 		.from(slackWorkspace)
 		.where(eq(slackWorkspace.orgId, org.id))
@@ -78,9 +78,10 @@ export const authRoutes = new Hono<AppContext>()
 		if (!currentUser || !org) {
 			// Signed out on a deployment that isn't set up yet: the app sends
 			// people to /setup instead of a sign-in button that can't work.
+			const loginOnly = c.env.SLACK_LOGIN_ONLY === "true"
 			const [credentials, installed] = await Promise.all([
 				slackCredentials(c.env).catch(() => null),
-				db(c.env)
+				loginOnly ? Promise.resolve([]) : db(c.env)
 					.select({ teamId: slackWorkspace.teamId })
 					.from(slackWorkspace)
 					.limit(1)
@@ -90,7 +91,7 @@ export const authRoutes = new Hono<AppContext>()
 				user: null,
 				org: null,
 				role: null,
-				setupComplete: Boolean(credentials) && installed.length > 0,
+				setupComplete: Boolean(credentials) && (loginOnly || installed.length > 0),
 			})
 		}
 		return c.json({
@@ -177,7 +178,10 @@ export const authRoutes = new Hono<AppContext>()
 				.values({
 					name: teamName,
 					slug: slugify(teamName),
-					metadata: { slackTeamId: teamId, slackTeamName: teamName },
+					metadata:
+						c.env.SLACK_LOGIN_ONLY === "true"
+							? null
+							: { slackTeamId: teamId, slackTeamName: teamName },
 				})
 				.returning()
 			if (!created) return refuse("Couldn't create the organization.", 409)
@@ -228,7 +232,7 @@ export const authRoutes = new Hono<AppContext>()
 		await startSession(c, userId, claimed.org.id)
 		// A fresh deployment still needs the bot installed, which /setup walks
 		// through; after that, sign-in lands in the app.
-		const [installed] = await db(c.env)
+		const [installed] = c.env.SLACK_LOGIN_ONLY === "true" ? [] : await db(c.env)
 			.select({ teamId: slackWorkspace.teamId })
 			.from(slackWorkspace)
 			.where(eq(slackWorkspace.orgId, claimed.org.id))

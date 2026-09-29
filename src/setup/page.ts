@@ -14,6 +14,7 @@ type PageParams = {
 	/** The installed Slack workspace's name, or null before the bot is installed. */
 	installedTeam: string | null
 	manifest: object
+	loginOnly: boolean
 }
 
 type StepState = "done" | "current" | "upcoming"
@@ -104,6 +105,17 @@ function slackAppBody(params: PageParams): string {
 	</form>`
 }
 
+function loginOnlySlackAppBody(params: PageParams): string {
+	const manifestUrl = `https://api.slack.com/apps?new_app=1&manifest_json=${encodeURIComponent(JSON.stringify(params.manifest))}`
+	return `<ol><li><a class="btn" href="${escapeHtml(manifestUrl)}" target="_blank" rel="noreferrer">Create the Slack app</a><br>This app is for sign-in only. It requests <code>openid email profile</code> and uses callback <code>${escapeHtml(params.origin)}/auth/slack/callback</code>. No bot installation, events, or workspace access is needed.</li><li>Enter the app's Client ID, Client Secret, and Signing Secret below.</li></ol>
+	<form method="post" action="/setup/slack">
+		<label for="clientId">Client ID</label><input id="clientId" name="clientId" autocomplete="off" required>
+		<label for="clientSecret">Client Secret</label><input id="clientSecret" name="clientSecret" type="password" autocomplete="off" required>
+		<label for="signingSecret">Signing Secret</label><input id="signingSecret" name="signingSecret" type="password" autocomplete="off" required>
+		<button type="submit">Save and continue</button>
+	</form>`
+}
+
 function databaseBanner(params: PageParams): string {
 	if (params.databaseReady) return ""
 	const pending = params.pendingMigrations.length
@@ -143,13 +155,13 @@ export function setupPage(params: PageParams): string {
 			: params.slackConfigured
 				? "current"
 				: "upcoming",
-		install: installed
+		install: params.loginOnly || installed
 			? "done"
 			: params.signedIn && params.slackConfigured
 				? "current"
 				: "upcoming",
 	}
-	const allDone = keysDone && params.slackConfigured && installed
+	const allDone = keysDone && params.slackConfigured && (params.loginOnly ? params.signedIn : installed)
 
 	const providerNames = params.providers
 		.map((p) => PROVIDER_NAMES[p] ?? p)
@@ -223,7 +235,7 @@ export function setupPage(params: PageParams): string {
 		states.slack,
 		"Create a Slack app",
 		"Slack app connected.",
-		slackAppBody(params),
+		params.loginOnly ? loginOnlySlackAppBody(params) : slackAppBody(params),
 	)}
 	${step(
 		"signin",
@@ -233,17 +245,17 @@ export function setupPage(params: PageParams): string {
 		"You're signed in.",
 		`<p>Sign in with your Slack account. The first person to sign in owns this deployment and can change its settings.</p><a class="btn" href="/auth/slack/login">Sign in with Slack</a>`,
 	)}
-	${step(
+	${params.loginOnly ? "" : step(
 		"install",
 		4,
 		states.install,
 		"Add the bot to your workspace",
 		`Installed in ${escapeHtml(params.installedTeam ?? "")}. If the bot never greeted you, <a href="/brain/slack/oauth/install">add it again</a> to rerun its setup.`,
 		`<p>Slack asks you to approve the bot's permissions. Once you do, it DMs you to say hi, joins your public channels and introduces itself, and offers to invite your teammates.</p><a class="btn" href="/brain/slack/oauth/install">Add to Slack</a>`,
-	)}
+	)}}
 	${
 		allDone
-			? `<div class="finished"><strong>You're all set.</strong><p>Say hi to the bot in Slack, or open the app to connect tools and tune how it behaves.</p><a class="btn" href="/">Open the app</a></div>`
+			? `<div class="finished"><strong>${params.loginOnly ? "Setup complete." : "You're all set."}</strong><p>${params.loginOnly ? "Slack sign-in is ready. No bot is installed in the workspace." : "Say hi to the bot in Slack, or open the app to connect tools and tune how it behaves."}</p><a class="btn" href="/">Open the app</a></div>`
 			: ""
 	}
 	${extras(params)}

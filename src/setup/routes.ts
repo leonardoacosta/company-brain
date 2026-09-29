@@ -56,13 +56,14 @@ export const setupRoutes = new Hono<AppContext>()
 				slackConfigured: Boolean(slack),
 				signedIn: Boolean(c.get("user")),
 				installedTeam: installed ? (installed.teamName ?? "your workspace") : null,
-				manifest: slackAppManifest(origin),
+				loginOnly: c.env.SLACK_LOGIN_ONLY === "true",
+				manifest: slackAppManifest(origin, undefined, c.env.SLACK_LOGIN_ONLY === "true"),
 			}),
 		)
 	})
 	.get("/manifest.json", (c) => {
 		const origin = c.env.PUBLIC_URL ?? new URL(c.req.url).origin
-		return c.json(slackAppManifest(origin))
+		return c.json(slackAppManifest(origin, undefined, c.env.SLACK_LOGIN_ONLY === "true"))
 	})
 	// Normally the worker migrates itself on first request; this is the manual
 	// retry. It only ever applies the migrations bundled into this build.
