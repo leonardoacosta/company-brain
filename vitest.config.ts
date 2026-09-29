@@ -13,9 +13,9 @@ export default defineConfig({
 			{ find: /^@repo\/validation\/(.*)$/, replacement: `${root}src/compat/validation/$1` },
 			{ find: /^@\/services\/(.*)$/, replacement: `${root}src/compat/services/$1` },
 			{ find: /^@\/routes\/(.*)$/, replacement: `${root}src/compat/routes/$1` },
-			{ find: "@/", replacement: `${root}src/` },
 			{ find: "@/lib/brain", replacement: `${root}src/brain` },
 			{ find: "@/lib", replacement: `${root}src/compat/lib` },
+			{ find: "@/", replacement: `${root}src/` },
 		],
 	},
 })
