@@ -66,14 +66,14 @@ function keysBody(params: PageParams): string {
 	const rows: string[] = []
 	if (!params.hasMemoryKey) {
 		rows.push(
-			"<li><strong><code>SUPERMEMORY_API_KEY</code></strong> is missing. Set it to a hosted Supermemory API key.</li>",
+			"<li><strong><code>SUPERMEMORY_API_KEY</code></strong> is missing. Set it to the bearer token configured on your private Supermemory service.</li>",
 		)
 	}
 	if (!params.hasMemoryBaseURL) {
 		rows.push(
 			params.memoryBaseURLConfigured
-				? "<li><strong><code>SUPERMEMORY_BASE_URL</code></strong> must be exactly <code>https://api.supermemory.ai</code>.</li>"
-				: "<li><strong><code>SUPERMEMORY_BASE_URL</code></strong> is missing. Set it to <code>https://api.supermemory.ai</code>.</li>",
+				? "<li><strong><code>SUPERMEMORY_BASE_URL</code></strong> must be exactly <code>http://supermemory:6767</code>.</li>"
+				: "<li><strong><code>SUPERMEMORY_BASE_URL</code></strong> is missing. Set it to <code>http://supermemory:6767</code>.</li>",
 		)
 	}
 	if (params.providers.length === 0) {
@@ -226,7 +226,7 @@ export function setupPage(params: PageParams): string {
 		1,
 		states.keys,
 		"Add your API keys",
-			`Memory on hosted Supermemory, model on ${escapeHtml(providerNames || "your provider")}.`,
+			`Memory on private Supermemory, model on ${escapeHtml(providerNames || "your provider")}.`,
 		keysBody(params),
 	)}
 	${step(

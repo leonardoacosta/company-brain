@@ -6,10 +6,10 @@ Setting up Company Brain is a few one-time steps for whoever deploys it. Everyon
 
 ## 1. Deploy and open `/setup`
 
-Set `SUPERMEMORY_API_KEY` from [console.supermemory.ai](https://console.supermemory.ai) and `SUPERMEMORY_BASE_URL` to exactly `https://api.supermemory.ai`, plus one model key. Then deploy the worker (the Deploy to Cloudflare button, or `wrangler deploy`) and open `/setup` on your deployment. It checks, in order:
+Set `SUPERMEMORY_API_KEY` to the bearer token configured on your private Supermemory service and `SUPERMEMORY_BASE_URL` to exactly `http://supermemory:6767`, plus one model key. Then deploy the worker (the Deploy to Cloudflare button, or `wrangler deploy`) and open `/setup` on your deployment. The worker must share a private network with the Supermemory service. It checks, in order:
 
 1. **Database:** the D1 migrations have run. The worker applies them itself on its first request; if that failed, the page shows why and a **Run migrations** button to retry.
-2. **Memory:** a nonblank `SUPERMEMORY_API_KEY` is set and `SUPERMEMORY_BASE_URL` is exactly `https://api.supermemory.ai`.
+2. **Memory:** a nonblank `SUPERMEMORY_API_KEY` bearer token is set and `SUPERMEMORY_BASE_URL` is exactly `http://supermemory:6767`.
 3. **Model:** `MODEL_API_KEY` holds an Anthropic, OpenAI, Google, xAI or OpenRouter key (the provider is detected from the key), or a provider-specific variable like `ANTHROPIC_API_KEY` is set. With an OpenRouter key every model runs through OpenRouter; a provider's own key, when set, still takes precedence for that provider.
 4. **Slack:** the Slack app credentials are stored.
 

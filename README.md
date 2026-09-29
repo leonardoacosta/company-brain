@@ -86,7 +86,7 @@ One click to deploy, two API keys, and a setup page that walks you through the S
 
 <h3>🔧 I want to hack on it</h3>
 
-TypeScript on Cloudflare Workers, Durable Objects and D1, with memory on [supermemory](https://supermemory.ai). Run it all locally.
+TypeScript on Cloudflare Workers, Durable Objects and D1, with memory on a private Supermemory service. Run it all locally.
 
 **[→ Local development](#local-development)**
 
@@ -98,7 +98,7 @@ TypeScript on Cloudflare Workers, Durable Objects and D1, with memory on [superm
 
 ## Deploy in five minutes
 
-**1. Configure hosted memory and a model provider.** Set `SUPERMEMORY_API_KEY` to a key from [console.supermemory.ai](https://console.supermemory.ai). Company Brain connects only to `https://api.supermemory.ai`. Also set one model provider key:
+**1. Configure private memory and a model provider.** Set `SUPERMEMORY_API_KEY` to the bearer token configured on your private Supermemory service and `SUPERMEMORY_BASE_URL` to exactly `http://supermemory:6767`. Also set one model provider key:
 
 - `MODEL_API_KEY`: an Anthropic, OpenAI, Google or xAI key, whichever you have. The brain works out the provider from the key. You pay the provider directly, no markup. An [OpenRouter](https://openrouter.ai) key works too, and reaches every provider's models through one account.
 
@@ -131,7 +131,7 @@ To use the built-in container on Workers Paid, uncomment the **Workers Paid** bl
 
 ```sh
 bun install
-cp .dev.vars.example .dev.vars   # set hosted Supermemory API key and model key
+cp .dev.vars.example .dev.vars   # set private Supermemory bearer token and model key
 bun run dev
 ```
 

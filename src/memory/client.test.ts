@@ -2,9 +2,13 @@ import { describe, expect, it } from "vitest"
 import { isAllowedSupermemoryBaseURL, memoryClient } from "./client"
 
 describe("memoryClient", () => {
-	it("allows only the canonical hosted API origin", () => {
-		expect(isAllowedSupermemoryBaseURL("https://api.supermemory.ai")).toBe(true)
+	it("allows only the private Supermemory service origin", () => {
+		expect(isAllowedSupermemoryBaseURL("http://supermemory:6767")).toBe(true)
 		for (const baseURL of [
+			"https://api.supermemory.ai",
+			"http://supermemory:6767/",
+			"http://supermemory:6767/path",
+			"http://user:password@supermemory:6767",
 			"http://api.supermemory.ai",
 			"https://supermemory.ai",
 			"https://custom.supermemory.ai",
@@ -23,40 +27,38 @@ describe("memoryClient", () => {
 		}
 	})
 
-	it("accepts the hosted Supermemory API URL", () => {
+	it("accepts the private Supermemory service URL with its bearer key", () => {
 		expect(() =>
 			memoryClient({
-				SUPERMEMORY_API_KEY: "probe-key",
-				SUPERMEMORY_BASE_URL: "https://api.supermemory.ai",
+				SUPERMEMORY_API_KEY: "local-probe-key",
+				SUPERMEMORY_BASE_URL: "http://supermemory:6767",
 			} as Env),
 		).not.toThrow()
 	})
 
 	it("rejects noncanonical Supermemory URLs", () => {
 		for (const baseURL of [
-			"https://api.supermemory.ai/path",
-			"https://api.supermemory.ai?query=1",
-			"https://api.supermemory.ai#fragment",
-			"https://api.supermemory.ai:443",
-			"https://api.supermemory.ai.",
-			"https://custom.supermemory.ai",
-			"https://user:password@api.supermemory.ai",
+				"http://supermemory:6767/",
+				"http://supermemory:6767/path",
+				"http://supermemory:6767?query=1",
+				"http://supermemory:6767#fragment",
+				"https://api.supermemory.ai",
 		]) {
 			expect(() =>
 				memoryClient({
 					SUPERMEMORY_API_KEY: "probe-key",
 					SUPERMEMORY_BASE_URL: baseURL,
 				} as Env),
-			).toThrow("SUPERMEMORY_BASE_URL must be exactly https://api.supermemory.ai.")
+			).toThrow("SUPERMEMORY_BASE_URL must be exactly http://supermemory:6767.")
 		}
 	})
 
-	it("fails closed when the hosted Supermemory URL is missing", () => {
+	it("fails closed when the private Supermemory URL is missing", () => {
 		expect(() =>
 			memoryClient({
 				SUPERMEMORY_API_KEY: "probe-key",
 			} as Env),
-		).toThrow("SUPERMEMORY_BASE_URL is not set — hosted memory endpoint must be configured.")
+		).toThrow("SUPERMEMORY_BASE_URL is not set — private memory endpoint must be configured.")
 	})
 
 	it("rejects a missing or blank API key", () => {
@@ -64,18 +66,19 @@ describe("memoryClient", () => {
 			expect(() =>
 				memoryClient({
 					SUPERMEMORY_API_KEY: key,
-					SUPERMEMORY_BASE_URL: "https://api.supermemory.ai",
+					SUPERMEMORY_BASE_URL: "http://supermemory:6767",
 				} as Env),
 			).toThrow("SUPERMEMORY_API_KEY is not set")
 		}
 	})
 
-	it("uses the canonical hosted Supermemory URL", () => {
+	it("uses the private Supermemory URL", () => {
 		const client = memoryClient({
 			SUPERMEMORY_API_KEY: "probe-key",
-			SUPERMEMORY_BASE_URL: "https://api.supermemory.ai",
+			SUPERMEMORY_BASE_URL: "http://supermemory:6767",
 		} as Env)
 
-		expect(client.baseURL).toBe("https://api.supermemory.ai")
+		expect(client.baseURL).toBe("http://supermemory:6767")
+		expect(client.apiKey).toBe("probe-key")
 	})
 })

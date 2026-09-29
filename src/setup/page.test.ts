@@ -19,26 +19,31 @@ const params = {
 	loginOnly: false,
 }
 
-describe("setupPage hosted memory configuration", () => {
-	it("requires the canonical hosted URL", () => {
+describe("setupPage private memory configuration", () => {
+	it("requires the canonical private URL", () => {
 		const html = setupPage(params)
 
 		expect(html).toContain("SUPERMEMORY_BASE_URL")
-		expect(html).toContain("https://api.supermemory.ai")
+		expect(html).toContain("http://supermemory:6767")
 		expect(html).toContain("<h2>Add your API keys</h2>")
 	})
 
-	it("completes the key step only when local memory URL is set", () => {
+	it("explains the private bearer key requirement", () => {
+		const html = setupPage({ ...params, hasMemoryKey: false })
+		expect(html).toContain("bearer token configured on your private Supermemory service")
+	})
+
+	it("completes the key step only when private URL and bearer token are set", () => {
 		const html = setupPage({ ...params, hasMemoryBaseURL: true })
 
-		expect(html).toContain("Memory on hosted Supermemory")
+		expect(html).toContain("Memory on private Supermemory")
 		expect(html).not.toContain("SUPERMEMORY_BASE_URL")
 	})
 
 	it("explains when a configured memory URL is not canonical", () => {
 		const html = setupPage({ ...params, memoryBaseURLConfigured: true })
 
-		expect(html).toContain("must be exactly <code>https://api.supermemory.ai</code>")
+		expect(html).toContain("must be exactly <code>http://supermemory:6767</code>")
 		expect(html).not.toContain("SUPERMEMORY_BASE_URL</code> is missing")
 		expect(html).not.toContain("Memory on local Supermemory")
 	})
@@ -46,7 +51,7 @@ describe("setupPage hosted memory configuration", () => {
 	it("keeps the key step incomplete when the memory URL is invalid", () => {
 		const html = setupPage({ ...params, hasMemoryBaseURL: false })
 
-		expect(html).toContain("https://api.supermemory.ai")
+		expect(html).toContain("http://supermemory:6767")
 		expect(html).not.toContain("Memory on local Supermemory")
 	})
 })

@@ -1,7 +1,7 @@
 # ── Required ──────────────────────────────────────────────────────────────────
-# Your hosted Supermemory API key. Get one at https://console.supermemory.ai
+# Private Supermemory bearer token, matching the homelab service configuration.
 SUPERMEMORY_API_KEY=""
-SUPERMEMORY_BASE_URL="https://api.supermemory.ai"
+SUPERMEMORY_BASE_URL="http://supermemory:6767"
 
 # One model API key: Anthropic, OpenAI, Google, xAI or OpenRouter. Paste whichever
 # you have; the brain tells them apart by prefix. An OpenRouter key (sk-or-)
