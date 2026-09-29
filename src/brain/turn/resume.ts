@@ -141,7 +141,7 @@ export async function resumeTurnAfterApproval(
 	} = input
 	const deps = await getTurnDeps()
 	const env = brainAgent(agent).env
-	const profile = resolveBrainMainProfile(org.metadata)
+	const profile = resolveBrainMainProfile(org.metadata, undefined, undefined, env)
 	throwIfAborted(abortSignal)
 	const capture: TurnCapture = {
 		memory: approval.state.memory ?? null,

@@ -56,7 +56,37 @@ function canReach(provider: SupportedModelProvider, env: Env): boolean {
 	return Boolean(providerKey(provider, env)?.trim() || openRouterKey(env))
 }
 
-export function availableProviders(env: Env): SupportedModelProvider[] {
+function omniConfig(env: Env) {
+	const values = [env.OMNI_BASE_URL, env.OMNI_MODEL, env.OMNI_API_KEY]
+	const present = values.filter((value) => value?.trim()).length
+	if (present > 0 && present < values.length) {
+		throw new Error("Incomplete OmniRoute configuration. Set OMNI_BASE_URL, OMNI_MODEL, and OMNI_API_KEY together.")
+	}
+	if (present === values.length) {
+		let endpoint: URL
+		try {
+			endpoint = new URL(env.OMNI_BASE_URL!.trim())
+		} catch {
+			throw new Error("Invalid OmniRoute base URL. Use an http(s) URL without credentials, query, or fragment.")
+		}
+		if (
+			(endpoint.protocol !== "http:" && endpoint.protocol !== "https:") ||
+			endpoint.username || endpoint.password || endpoint.search || endpoint.hash
+		) {
+			throw new Error("Invalid OmniRoute base URL. Use an http(s) URL without credentials, query, or fragment.")
+		}
+		return {
+			baseURL: endpoint.toString().replace(/\/$/, ""),
+			model: env.OMNI_MODEL!.trim(),
+			apiKey: env.OMNI_API_KEY!.trim(),
+		}
+	}
+	return undefined
+}
+
+export function availableProviders(env: Env): (SupportedModelProvider | "omni")[] {
+	const omni = omniConfig(env)
+	if (omni) return ["omni"]
 	const order: SupportedModelProvider[] = [
 		"anthropic",
 		"openai",
@@ -81,6 +111,8 @@ function openRouterModel(modelName: SupportedModel, apiKey: string) {
 }
 
 function resolveModel(modelName: SupportedModel, env: Env): SupportedModel {
+	const omni = omniConfig(env)
+	if (omni) return modelName
 	const { provider } = getModelInfo(modelName)
 	if (canReach(provider, env)) return modelName
 	const fallbackProvider = availableProviders(env)[0]
@@ -91,18 +123,20 @@ function resolveModel(modelName: SupportedModel, env: Env): SupportedModel {
 		captureException(error, { tags: { feature: "company_brain" } })
 		throw error
 	}
+	if (fallbackProvider === "omni") return modelName
 	return PROVIDER_DEFAULT_MODEL[fallbackProvider]
 }
 
 /** xAI client, for the provider-native web-search tool. */
 export function brainXai(env: Env, apiKeyOverride?: string) {
+	if (omniConfig(env)) throw new Error("xAI-native tools are unavailable through OmniRoute.")
 	return createXai({
 		apiKey: apiKeyOverride ?? env.XAI_API_KEY ?? GATEWAY_INJECTED_KEY,
 	})
 }
 
 export function hasXai(env: Env): boolean {
-	return Boolean(env.XAI_API_KEY?.trim()) || hasBrainGateway(env)
+	return !omniConfig(env) && (Boolean(env.XAI_API_KEY?.trim()) || hasBrainGateway(env))
 }
 
 export function brainProviderModel(
@@ -110,6 +144,13 @@ export function brainProviderModel(
 	env: Env,
 	apiKeyOverride?: string,
 ): LanguageModel {
+	const omni = omniConfig(env)
+	if (omni) {
+		if (getModelInfo(modelName).provider === "xai") {
+			throw new Error("xAI-specific models and tools are unavailable through OmniRoute. Choose a compatible model setting.")
+		}
+		return createOpenAI({ apiKey: omni.apiKey, baseURL: omni.baseURL }).chat(omni.model)
+	}
 	const { modelId, provider } = getModelInfo(modelName)
 	const directKey = providerKey(provider, env)?.trim()
 	const routerKey = openRouterKey(env)
@@ -154,6 +195,7 @@ export function wrapBrainGateway(
 	if (!primary) {
 		throw new Error("[company-brain] no model candidates provided")
 	}
+	if (omniConfig(env)) return primary
 	const config = brainGatewayConfig(env)
 	if (!config) return primary
 	const aigateway = createAiGateway(config)
@@ -163,6 +205,7 @@ export function wrapBrainGateway(
 
 export function getBrainModel(modelName: SupportedModel, env: Env) {
 	const resolved = resolveModel(modelName, env)
+	if (omniConfig(env)) return brainProviderModel(resolved, env)
 	const gateway = hasBrainGateway(env)
 	const key = gateway ? GATEWAY_INJECTED_KEY : undefined
 	const candidates = [brainProviderModel(resolved, env, key)]

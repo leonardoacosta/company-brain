@@ -97,3 +97,14 @@ Defined by code, mirrored in the manifest. If these drift, update the manifest a
 - Event handling and routing: `apps/api/src/lib/brain/slack/events.ts`, turns run in the `CompanyBrainAgent` Durable Object (`apps/api/src/lib/brain/turn/agent.ts`).
 
 Architecture background: [architecture.md](./architecture.md) and [spec.md](./spec.md).
+# Optional OmniRoute model gateway
+
+Set `OMNI_BASE_URL`, `OMNI_MODEL`, and `OMNI_API_KEY` together to route brain
+models through OmniRoute's OpenAI-compatible `/chat/completions` API. The
+homelab network URL is `http://omniroute:20128/v1`; private ingress is
+`https://omni.leonardoacosta.dev/v1`. Choose the URL reachable from this worker.
+Model settings in the UI remain canonical application IDs; OmniRoute receives
+the configured `OMNI_MODEL` wire ID instead. Set it to an enabled model ID from
+OmniRoute. `OMNI_API_KEY` must be
+the dedicated proxy key, not an admin secret. Incomplete settings do not enable
+OmniRoute, and the application does not guess a model or endpoint.

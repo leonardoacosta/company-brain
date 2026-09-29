@@ -1,0 +1,18 @@
+import { fileURLToPath } from "node:url"
+import { defineConfig } from "vitest/config"
+
+const root = fileURLToPath(new URL(".", import.meta.url))
+
+export default defineConfig({
+	resolve: {
+		alias: [
+			{ find: /^@repo\/db\/schema\/(.*)$/, replacement: `${root}src/db/schema/$1` },
+			{ find: "@repo/db/schema", replacement: `${root}src/db/schema/index.ts` },
+			{ find: "@repo/db", replacement: `${root}src/db/index.ts` },
+			{ find: /^@repo\/lib\/(.*)$/, replacement: `${root}src/compat/repo-lib/$1` },
+			{ find: /^@repo\/validation\/(.*)$/, replacement: `${root}src/compat/validation/$1` },
+			{ find: "@/lib/brain", replacement: `${root}src/brain` },
+			{ find: "@/lib", replacement: `${root}src/compat/lib` },
+		],
+	},
+})

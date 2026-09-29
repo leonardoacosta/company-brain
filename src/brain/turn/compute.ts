@@ -173,6 +173,7 @@ export async function computeTurn(
 		org.metadata,
 		agentMainEffort,
 		effortOverride,
+		env,
 	)
 	const abortSignal = options?.abortSignal
 	throwIfAborted(abortSignal)

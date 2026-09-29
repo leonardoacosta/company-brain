@@ -9,6 +9,9 @@ interface Env {
 	GOOGLE_GENERATIVE_AI_API_KEY?: string
 	XAI_API_KEY?: string
 	OPENROUTER_API_KEY?: string
+	OMNI_BASE_URL?: string
+	OMNI_MODEL?: string
+	OMNI_API_KEY?: string
 	DAYTONA_API_KEY?: string
 	/** Public origin of this worker, used for OAuth redirects and Slack links. */
 	PUBLIC_URL: string
@@ -30,6 +33,8 @@ interface Env {
 interface Env {
 	/** Single-workspace bot token, for running without the OAuth install flow. */
 	SLACK_BOT_TOKEN?: string
+	/** Disable Slack OAuth installs for a login-only worker. */
+	SLACK_LOGIN_ONLY?: string
 	/** Where account-link URLs point. Defaults to this worker. */
 	CONSUMER_APP_URL?: string
 }

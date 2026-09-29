@@ -55,6 +55,7 @@ function usableModels<T extends SupportedModel>(
 	models: readonly T[],
 ): T[] {
 	const providers = new Set(availableProviders(env))
+	if (providers.has("omni")) return [...models]
 	return models.filter((model) => providers.has(getModelInfo(model).provider))
 }
 

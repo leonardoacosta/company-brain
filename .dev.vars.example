@@ -16,6 +16,14 @@ MODEL_API_KEY=""
 # XAI_API_KEY=""
 # OPENROUTER_API_KEY=""
 
+# Optional OpenAI-compatible OmniRoute. Set all three; no default model is chosen.
+# OMNI_BASE_URL="http://omniroute:20128/v1"
+# OMNI_MODEL=""
+# OMNI_API_KEY="" # Dedicated proxy key, not an OmniRoute admin secret.
+
+# Set true on a login-only worker to disable Slack OAuth installation.
+# SLACK_LOGIN_ONLY="true"
+
 # ── Optional ──────────────────────────────────────────────────────────────────
 # Sandbox tools (shell, git, files). On Workers Paid, with the paid block in
 # wrangler.jsonc enabled and CONTAINER_SANDBOX set to "on", they run on a

@@ -129,6 +129,7 @@ export function brainFallbackModelFor(name: BrainProfileModel): SupportedModel {
 export function createModelProfile<ModelName extends BrainProfileModel>(
 	name: ModelName,
 	effort: Effort = BRAIN_MAIN_EFFORT,
+	omni = false,
 ): ModelProfile<ModelName> {
 	const provider = getModelInfo(name).provider
 	return {
@@ -137,6 +138,7 @@ export function createModelProfile<ModelName extends BrainProfileModel>(
 		effort,
 		maxSteps: MAX_STEPS,
 		providerOptions(requestedEffort): SharedV3ProviderOptions {
+			if (omni) return {}
 			return {
 				...getModelReasoningProviderOptions(
 					brainFallbackModelFor(name),
@@ -146,7 +148,7 @@ export function createModelProfile<ModelName extends BrainProfileModel>(
 			}
 		},
 		cacheControl(): SharedV3ProviderOptions | undefined {
-			return provider === "anthropic"
+			return !omni && provider === "anthropic"
 				? { anthropic: { cacheControl: { type: "ephemeral" } } }
 				: undefined
 		},
@@ -157,10 +159,12 @@ export function resolveBrainMainProfile(
 	metadata: unknown,
 	agentMainEffort?: Effort,
 	effortOverride?: Effort,
+	env?: Env,
 ): ModelProfile {
 	return createModelProfile(
 		resolveBrainMainModel(metadata),
 		resolveBrainMainEffort(metadata, agentMainEffort, effortOverride),
+		Boolean(env && env.OMNI_BASE_URL && env.OMNI_MODEL && env.OMNI_API_KEY),
 	)
 }
 
