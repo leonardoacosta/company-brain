@@ -4,8 +4,12 @@ import { defineConfig } from "vitest/config"
 const root = fileURLToPath(new URL(".", import.meta.url))
 
 export default defineConfig({
+	test: {
+		server: { deps: { inline: ["@cloudflare/codemode"] } },
+	},
 	resolve: {
 		alias: [
+			{ find: /^cloudflare:workers$/, replacement: `${root}test/cloudflare-workers.ts` },
 			{ find: /^@repo\/db\/schema\/(.*)$/, replacement: `${root}src/db/schema/$1` },
 			{ find: "@repo/db/schema", replacement: `${root}src/db/schema/index.ts` },
 			{ find: "@repo/db", replacement: `${root}src/db/index.ts` },
